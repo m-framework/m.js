@@ -19,6 +19,7 @@ m.fn.leaflet_map = function(form) {
 
         var
             address = _map.data.address || '',
+            access_token = _map.data.access_token || '',
             lat = parseFloat(_map.data.lat),
             lon = parseFloat(_map.data.lon),
             z = parseFloat(_map.data.z) || 18,
@@ -54,7 +55,7 @@ m.fn.leaflet_map = function(form) {
             init_geocode();
         }
 
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + access_token, {
             maxZoom: 18,
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ',
             id: 'mapbox.streets'
