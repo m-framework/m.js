@@ -19,6 +19,7 @@ m.fn.youtube_form = function(context){
         _data = {action: 'save_youtube_video'},
         html,
         code,
+        api_key = field.data.api_key || '',
         _upload = function(e){
             e.preventDefault();
 
@@ -93,7 +94,7 @@ m.fn.youtube_form = function(context){
         }
 
         m.ajax({
-            url: "https://www.googleapis.com/youtube/v3/videos?id=" + code + "&key=AIzaSyBaWQ5ggQEAKLr3Nofrsfpv_oC5CBpDj6k&part=snippet,contentDetails,statistics,status",
+            url: "https://www.googleapis.com/youtube/v3/videos?id=" + code + "&key=" + api_key + "&part=snippet,contentDetails,statistics,status",
             type: 'GET',
             data: {},
             success: function (r) {
