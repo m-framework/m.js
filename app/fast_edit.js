@@ -13,6 +13,7 @@ m.fn.fast_edit = function(context) {
         add_a = parent.find('a.add'),
         id = this.data.id,
         model = this.data.model,
+        module = this.data.module || null,
         fields = {},
         smth_changed = false,
         file_manager = m.to_element('<div style="width: 680px; margin-top: -21px;"><input type="file" class="hidden" data-m-action="file_manager"><input class="selected_files" type="hidden" value=""></div>');
@@ -26,6 +27,7 @@ m.fn.fast_edit = function(context) {
             m.ajax({
                 data: {
                     model: model,
+                    module: module,
                     id: id,
                     action: '_ajax_add_' + model
                 },
@@ -49,6 +51,7 @@ m.fn.fast_edit = function(context) {
                 var
                     data = {
                         model: model,
+                        module: module,
                         id: id,
                         action: '_ajax_update_' + model
                     },
@@ -159,6 +162,7 @@ m.fn.fast_edit = function(context) {
             m.ajax({
                 data: {
                     model: model,
+                    module: module,
                     id: id,
                     action: '_ajax_delete_' + model
                 },
