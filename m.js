@@ -183,34 +183,6 @@
             });
         },
         /**
-         * Exclude elements by selector or all elements in the same instance
-         * @param selector
-         * @returns m instance
-         */
-        not: function(selector) {
-            var
-                set = this,
-                n = 0;
-
-            if (typeof selector == 'object' && selector instanceof m && this == selector) {
-                delete set.elements;
-                return this;
-            }
-
-            this.each(function() {
-                if (typeof selector == 'string' && m(this).class(selector))
-                    delete set.elements[n];
-
-                if (typeof Node === "object" ? selector instanceof Node : selector && typeof selector === "object" &&
-                    typeof selector.nodeType === "number" && typeof selector.nodeName === "string" && this == selector)
-                    delete set.elements[n];
-
-                n++;
-            });
-
-            return set;
-        },
-        /**
          * Hide all elements in instance by adding a CSS class 'hidden'
          * @returns m instance
          */

@@ -56,7 +56,7 @@ m.wysiwyg = m.Module.extend({
         m(this.doc).find('head')
             .append('<link rel="stylesheet" href="https://cdn.m-framework.com/css/1.2.min/m.css" type="text/css">')
             .append('<link rel="stylesheet" href="https://cdn.m-framework.com/css/1.2.min/fonts.css" type="text/css" media="all">')
-            .append('<style>body {font-family: \'Open Sans\', sans-serif; font-size: 14px; overflow-y: auto;}</style>');
+            .append('<style>body {font-family: \'Open Sans\', sans-serif; font-size: 14px; overflow-y: auto;} .wysiwyg-context{display:inline-block;width:150px;height:auto;position:absolute;z-index:900;padding:5px 0;background:#fff;border:1px solid #ccc;border-radius:5px;box-shadow:0 8px 20px rgba(0,0,0,.4);font-weight:400}.wysiwyg-context a{display:inline-block;width:100%;padding:3px 16px;overflow:hidden;text-decoration:none;text-overflow:ellipsis;line-height:16px;white-space:nowrap;font-size:10.5pt;font-weight:400;color:#333;cursor:pointer}.wysiwyg-context a:hover{background-color:#ddd}</style>');
 
         m(this.doc).find('body').class({'wysiwyg-body': true}).html(this.action.first.value);
 
