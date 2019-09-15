@@ -54,8 +54,9 @@ m.wysiwyg = m.Module.extend({
         this.doc.open();
         this.doc.close();
         m(this.doc).find('head')
-            .append('<link rel="stylesheet" href="https://cdn.m-framework.com/css/1.1.min/m.css" type="text/css">')
-            .append('<link rel="stylesheet" href="https://cdn.m-framework.com/css/1.1.min/fonts.css" type="text/css" media="all">');
+            .append('<link rel="stylesheet" href="https://cdn.m-framework.com/css/1.2.min/m.css" type="text/css">')
+            .append('<link rel="stylesheet" href="https://cdn.m-framework.com/css/1.2.min/fonts.css" type="text/css" media="all">')
+            .append('<style>body {font-family: \'Open Sans\', sans-serif; font-size: 14px; overflow-y: auto;}</style>');
 
         m(this.doc).find('body').class({'wysiwyg-body': true}).html(this.action.first.value);
 
