@@ -1046,9 +1046,10 @@
          * @params callback - function
          */
         ready: function(callback) {
-            return this.first.onreadystatechange = this.first.onload = function() {
+            this.first.onreadystatechange = this.first.onload = function() {
                 return callback.call();
             };
+            return this;
         },
         /**
          * Grab all form data to object
@@ -1100,19 +1101,19 @@
          */
         translate: function() {
             var
-                element = this,
+                m_instance = this,
                 regex = /\*([a-zA-Z0-9\-_ ]+)\*/ig,
                 matches = regex.exec(this.first.innerHTML);
 
-            element.each(function(i){
+            m_instance.each(function(i){
                 var html = this.outerHTML;
                 while (matches = regex.exec(html)) {
                     html = html.replace('*' + matches['1'] + '*', m.i18n(matches['1']));
                 }
-                element.elements[i] = m.to_element(html);
+                m_instance.elements[i] = m.to_element(html);
             });
 
-            return element;
+            return m_instance;
         },
         /**
          * Set a new node to each of instance element.
