@@ -286,7 +286,7 @@ m.wysiwyg = m.Module.extend({
                 textarea.first.focus();
             },
             tpl: {
-                paste_text: '<form id="paste_text" class="to-modal w100 paste-text modal-form" style="width: 600px;">' +
+                paste_text: '<form id="paste_text" class="to-modal w100 paste-text modal-form">' +
                 '<h2>*Paste below a text from any other editor for clean a content from unnecessary tags*:</h2>' +
                 '<textarea rows="8"></textarea><input class="btn big" type="submit" value="*Save*"></form>'
             }
@@ -637,7 +637,7 @@ m.wysiwyg = m.Module.extend({
                 m.modal(link_form);
             },
             tpl: {
-                'link_form': '<form id="link_form" class="to-modal link-form" action="" method="post" style="width: 600px;">' +
+                'link_form': '<form id="link_form" class="to-modal link-form" action="" method="post">' +
                 '<ul class="tabs" data-m-action="ul_tabs">' +
                 '<li class="links wysiwyg-modal-links"></li>' +
                 '<li class="modal-form" data-m-title="*By link*">' +
@@ -783,7 +783,7 @@ m.wysiwyg = m.Module.extend({
                 image_form.on('submit', image_form_submit);
             },
             tpl: {
-                image_form: '<form id="image_form" class="to-modal image-forms" action="" method="post" style="width: 600px;">' +
+                image_form: '<form id="image_form" class="to-modal image-forms" action="" method="post">' +
                     '<ul class="tabs" data-m-action="ul_tabs">' +
                     '<li class="links wysiwyg-modal-links"></li>' +
                     '<li class="modal-form" data-m-title="*By link*">' +
@@ -840,7 +840,7 @@ m.wysiwyg = m.Module.extend({
                 m.modal(form);
             },
             tpl: {
-                youtube_form: '<form id="youtube_form" class="to-modal w100 youtube-video modal-form" style="width: 600px;">' +
+                youtube_form: '<form id="youtube_form" class="to-modal w100 youtube-video modal-form">' +
                 '<h2>*Paste a link to embed video from Youtube or embed code*:</h2>' +
                 '<textarea rows="1" placeholder="*Youtube embed link*"></textarea>' +
                 '<textarea rows="5" placeholder="*or Embed code*"></textarea>' +
@@ -962,14 +962,14 @@ m.wysiwyg = m.Module.extend({
                 pdf_form.on('submit', pdf_form_submit);
             },
             tpl: {
-                pdf_form: '<form id="pdf_form" class="to-modal image-forms" action="" method="post" style="width: 600px;">' +
+                pdf_form: '<form id="pdf_form" class="to-modal image-forms" action="" method="post">' +
                 '<ul class="tabs" data-m-action="ul_tabs">' +
                 '<li class="links wysiwyg-modal-links"></li>' +
                 '<li class="modal-form" data-m-title="*By link*">' +
                 '   <p>*Path to PDF*:</p><input type="text" name="src">' +
                 '   <p>*Iframe size*:</p><input type="text" name="width" style="width: 90px; display: inline-block;" placeholder="*width*" value="100%">' +
                 '   <span style="width: 50px; text-align: center; display: inline-block;"> x </span>' +
-                '   <input type="text" name="height" style="width: 90px; display: inline-block;" placeholder="*height*" height="600px">' +
+                '   <input type="text" name="height" style="width: 90px; display: inline-block;" placeholder="*height*">' +
                 '   <div class="clearfix"></div>' +
                 '   <input class="btn big" type="submit" value="*Save*">' +
                 '</li>' +
@@ -1012,7 +1012,7 @@ m.wysiwyg = m.Module.extend({
                 m.modal(form);
             },
             tpl: {
-                google_map_form: '<form id="google_map_form" class="to-modal w100 embed_map modal-form" style="width: 600px;">' +
+                google_map_form: '<form id="google_map_form" class="to-modal w100 embed_map modal-form">' +
                 '<h2>*Paste an embed Google map code below*:</h2> ' +
                 '<textarea rows="5" placeholder="*Map embed code*"></textarea> ' +
                 '<input class="btn big" type="submit" value="*Save*"></form>'
@@ -1063,7 +1063,7 @@ m.wysiwyg = m.Module.extend({
                 m.modal(form);
             },
             tpl: {
-                table_form: '<form id="table_form" class="to-modal w100 table modal-form" style="width: 600px;">' +
+                table_form: '<form id="table_form" class="to-modal w100 table modal-form">' +
                     '<h2>*Create a simple table with such parameters*:</h2>' +
                     '<p>*Rows and columns* :</p>' +
                     '<input type="number" name="rows" style="width: 90px; display: inline-block;" placeholder="*rows*" value="2">' +

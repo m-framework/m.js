@@ -84,7 +84,7 @@ m.fn.ajax_suggestions = function(context) {
                 }
 
                 m('document')
-                    .off('click', click_function)
+                    .off('click')
                     .on('click', click_function);
             }
         });

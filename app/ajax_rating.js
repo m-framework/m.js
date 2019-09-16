@@ -9,7 +9,7 @@ m.fn.ajax_rating = function(votes_container) {
         || votes_container.find('.total').length === 0) {
 
         votes_container.html('<div class="minus"></div><div class="plus"></div><span data-m-title="' +
-            m.i18n('rating details') + '">' + m.i18n('total_rating') + ':&nbsp;<span class="total"></span></span><div class="to-modal modal-votes"></div>');
+            m.i18n('rating details') + '">' + m.i18n('Rating') + ':&nbsp;<span class="total"></span></span><div class="to-modal modal-votes"></div>');
     }
 
 

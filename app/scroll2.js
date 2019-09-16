@@ -14,6 +14,7 @@ if (typeof m == 'undefined') {
     var m = function () {};
     m.fn = m.prototype = {};
 }
+
 m.fn.scroll2 = function(context) {
 
     if (typeof context == 'undefined' || context === null || !(context instanceof m))

@@ -96,7 +96,7 @@ m.fn.file_manager = function(file_input, submit_callback) {
                     create_new_dir_init = function(e) {
                         if (e.keyCode == 13 || e.keyCode == undefined) {
                             e.preventDefault();
-                            m(input).off('change, keydown', create_new_dir_init);
+                            m(input).off('change keydown');
                             create_new_dir(input.value);
                         }
                     };

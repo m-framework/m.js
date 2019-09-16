@@ -36,7 +36,7 @@ m.fn.dependent_wrapper = function(context) {
                 }
             }
             else {
-                wrapper.hide({hidden: true});
+                wrapper.class({hidden: true});
             }
         };
 
