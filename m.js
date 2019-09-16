@@ -187,30 +187,27 @@
          * @returns m instance
          */
         hide: function() {
-            this.each(function() {
+            return this.each(function() {
                 m(this).class('hidden', true)
             });
-            return this;
         },
         /**
          * Remove from all of elements in instance a CSS class 'hidden'. So default 'display' parameter returns back.
          * @returns m instance
          */
         show: function() {
-            this.each(function() {
+            return this.each(function() {
                 m(this).class('hidden', n).css({display: 'initial'})
             });
-            return this;
         },
         /**
          * Toggle a `style="dispaly:block|none;"` in each of elements. Toggle via .hide() or .show() not enough.
          * @returns m instance
          */
         toggle: function() {
-            this.each(function() {
+            return this.each(function() {
                 m(this).visible() ? this.style.display = "none" : this.style.display = "block";
             });
-            return this;
         },
         /**
          * Initiate a toggle CSS class 'active' of context element by click event on each of elements in instance.
@@ -351,7 +348,7 @@
 
             var _e = events.toString().split(' ');
 
-            this.each(function() {
+            return this.each(function() {
                 var el = this;
                 _e.forEach(function(ev) {
 
@@ -412,8 +409,6 @@
                         el.attachEvent('on' + ev, el['_events'][ev]);
                 });
             });
-
-            return this;
         },
         /**
          * Detach an events by it names in space-separated string
@@ -1044,7 +1039,7 @@
             return m(this).append(_c);
         },
         remove_script: function(action) {
-            this.find('script[src*="/' + action + '"]').remove();
+            return this.find('script[src*="/' + action + '"]').remove();
         },
         /**
          * Attach a callback to script/image/css file load event. Can be used like m('img#test').ready(function(){...});
