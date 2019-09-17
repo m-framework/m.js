@@ -197,7 +197,7 @@
          */
         show: function() {
             return this.each(function() {
-                m(this).class('hidden', n).css({display: 'initial'})
+                m(this).class('hidden', n).css({display: 'block'})
             });
         },
         /**
