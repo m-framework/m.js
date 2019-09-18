@@ -8,6 +8,7 @@ m.fn.leaflet_map = function(form) {
     var _map = this;
 
     if (_map.attr('id') == null) {
+        console.log('Can\'t init `leaflet_map` module: map container doesn\'t have an unique `id` attribute.');
         return false;
     }
 
