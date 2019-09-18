@@ -334,8 +334,10 @@ m.fn.canvas_graph = function(context) {
                     max_y = yt;
                 if (d == horizontal_count)
                     min_y = yt;
-
-                draw_text(available_box['3'] - 10, available_box['2'] + (horizontal_count - d) * y_line_step - 3, 12, 'Open Sans', '#444444', yt, 'right');
+                
+                if (!isNaN(yt)) {
+                    draw_text(available_box['3'] - 10, available_box['2'] + (horizontal_count - d) * y_line_step - 3, 12, 'Open Sans', '#444444', yt, 'right');
+                }
             }
 
             y_coefficient = (last_y - first_y) / Math.abs(min_y - max_y);
