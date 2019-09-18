@@ -94,7 +94,7 @@ m.fn.file_manager = function(file_input, submit_callback) {
                 var
                     input = document.createElement('input'),
                     create_new_dir_init = function(e) {
-                        if (e.keyCode == 13 || e.keyCode == undefined) {
+                        if (e.keyCode == 13 || typeof e.keyCode == 'undefined') {
                             e.preventDefault();
                             m(input).off('change keydown');
                             create_new_dir(input.value);
@@ -122,8 +122,17 @@ m.fn.file_manager = function(file_input, submit_callback) {
                     data_list.find('li.file[data-src]').each(function () {
                         select_file.call(this);
                     });
+                    
+                    var sel_files = file_input.first.selected_arr.join(',');
+                    
+                    if (sel_files['0'] == ',') {
+                        sel_files = sel_files.substr(1);
+                    }
+                    if (sel_files.substr(-1) == ',') {
+                        sel_files = sel_files.substr(0, sel_files.length - 1);
+                    }
 
-                    selected_files.val(file_input.first.selected_arr.join(',')).change();
+                    selected_files.val(sel_files).change();
                 });
             }
         },
@@ -135,7 +144,7 @@ m.fn.file_manager = function(file_input, submit_callback) {
                     action: 'create_new_dir',
                     dir: dir
                 },
-                success: function(responce) {
+                success: function(response) {
                     load_data_list();
                 }
             });
@@ -157,7 +166,7 @@ m.fn.file_manager = function(file_input, submit_callback) {
                     url: '/ajax',
                     data: data,
                     contentType: false,
-                    success: function(responce) {
+                    success: function(response) {
 
                         file_input.val('');
                         load_data_list();
@@ -173,8 +182,8 @@ m.fn.file_manager = function(file_input, submit_callback) {
                     action: 'delete_file',
                     file: file_item.find('a').html().trim()
                 },
-                success: function(responce) {
-                    if (responce['success'] !== undefined && responce['success'] == true)
+                success: function(response) {
+                    if (typeof response['success'] !== 'undefined' && response['success'] == true)
                         file_item.remove();
                 }
             });
@@ -201,8 +210,17 @@ m.fn.file_manager = function(file_input, submit_callback) {
                 file_input.first.selected_arr = [src];
                 m(this).class({selected: true});
             }
+                    
+            var sel_files = file_input.first.selected_arr.join(',');
+            
+            if (sel_files['0'] == ',') {
+                sel_files = sel_files.substr(1);
+            }
+            if (sel_files.substr(-1) == ',') {
+                sel_files = sel_files.substr(0, sel_files.length - 1);
+            }
 
-            selected_files.val(file_input.first.selected_arr.join(',')).change();
+            selected_files.val(sel_files).change();
         },
         load_data_list = function() {
 
@@ -214,18 +232,22 @@ m.fn.file_manager = function(file_input, submit_callback) {
                     actual_dir: actual_dir.val(),
                     action: 'data_list'
                 },
-                success: function(responce) {
-                    if (responce['error'] !== undefined) {
-                        data_list.html(responce['error']);
+                success: function(response) {
+                    if (typeof response['error'] !== 'undefined') {
+                        console.log(response['error']);
+                        
+                        if (actual_dir.val().length > 0 && actual_dir.val().substr(-3) == '/..') {
+                            actual_dir.val(actual_dir.val().substr(0, actual_dir.val().length-3));
+                        }
                     }
-                    else if (responce['data_list'] !== undefined) {
+                    else if (typeof response['data_list'] !== 'undefined') {
                         data_list.html('');
 
-                        change_actual_dir(responce['actual_dir']);
+                        change_actual_dir(response['actual_dir']);
 
                         new_dir_init();
 
-                        responce['data_list'].forEach(function(data_el) {
+                        response['data_list'].forEach(function(data_el) {
                             var
                                 li = document.createElement('li'),
                                 a = document.createElement('a'),
