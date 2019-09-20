@@ -39,9 +39,79 @@ m.wysiwyg = m.Module.extend({
         this.area = this.doc.area = this.area.wrap('<div class="hidden"></div>').find('textarea')
             .css({'border-radius': 0, border: 'none 0', height: '300px'}).class('code', true);
         this.area.start_text = this.area.text();
-        this.area.on('scroll', function(e){
-            m(this).css({'background-position': '3px ' + (6 - this.scrollTop) + 'px'});
-        });
+        this.area
+            .on('scroll', function(e){
+                m(this).css({'background-position': '0 -' + this.scrollTop + 'px'});
+            })
+            .on('keydown', function(e){
+                       
+                if(e.keyCode == 9) {
+                    e.preventDefault();
+                    
+                    if (typeof this.selectionStart == 'undefined' || typeof this.selectionEnd == 'undefined') {
+                        return false;
+                    }
+                    
+                    var 
+                        selection_start = this.selectionStart,
+                        selection_end = this.selectionEnd,
+                        selected = this.value.substring(this.selectionStart, this.selectionEnd),
+                        selected_arr = selected.split("\n");
+                        
+                    if (selected_arr.length > 0) {
+                        for(var s = 0; s < selected_arr.length; s++) {
+                            if (e.shiftKey) {
+                                selected_arr[s] = selected_arr[s].replace('    ', '');
+                                selection_end -= 4;
+                            }
+                            else {
+                                selected_arr[s] = '    ' + selected_arr[s];
+                                selection_end += 4;
+                            }
+                            
+                        }
+                    }
+                    
+                    this.value = this.value.substring(0, this.selectionStart) + selected_arr.join("\n") + this.value.substring(this.selectionEnd, this.length);
+                    
+                    this.selectionStart = selection_start;
+                    this.selectionEnd = selection_end;
+                }
+                
+                if(e.keyCode == 68 && e.ctrlKey) {
+                    e.preventDefault();
+                
+                    if (typeof this.selectionStart == 'undefined' || typeof this.selectionEnd == 'undefined') {
+                        return false;
+                    }
+                    
+                    var 
+                        selection_start = this.selectionStart,
+                        selection_end = this.selectionEnd,
+                        selected = this.value.substring(selection_start, selection_end);
+                    
+                    if (selected.length == 0 && this.value.length > 0 && this.value.indexOf("\n") > -1) {
+            
+                        var 
+                            rows = this.value.split("\n"),
+                            prev_rows = this.value.substr(0, selection_start).split("\n");
+                            
+                        if (prev_rows.length > 0) {
+                            var prev_selected = prev_rows[prev_rows.length - 1].length;
+                            selection_start = selection_start - prev_selected;
+                            selected = rows[prev_rows.length - 1] + "\n";
+                            this.selectionEnd = selection_start + selected.length;
+                        }
+                    }
+                
+                    selection_end += selected.length;    
+                    selected += selected;
+                    
+                    this.value = this.value.substring(0, selection_start) + selected + this.value.substring(this.selectionEnd, this.length);
+                    
+                    this.selectionEnd = selection_end;
+                }
+            });
     },
     frame_init: function() {
         this.height = this.area.css('height');
@@ -901,10 +971,14 @@ m.wysiwyg = m.Module.extend({
                         if (typeof form_data['src'] == 'undefined' || form_data['src'] == null || form_data['src'] == '') {
                             return false;
                         }
+                        
+                        if (form_data['src'].substr(0, 4) !== 'http' && form_data['src'].substr(0, 1) == '/') {
+                            form_data['src'] = (window.location.protocol  || document.location.protocol) + '//' + window.location.host + form_data['src'];
+                        }
 
                         if (form_data['src'].length > 0)
                         context.exec.call(context, 'insertHTML', '<iframe ' +
-                        'src="/pdfjs/web/viewer.html?file=' + form_data['src'] + '" '+
+                        'src="https://m-framework.com/pdfjs/web/viewer.html?file=' + form_data['src'] + '" '+
                         (width !== null ? ' width="' + width + '"' : '') +
                         (height !== null ? ' height="' + height + '"' : '') +
                         ' frameborder="0"></iframe>');
@@ -944,9 +1018,14 @@ m.wysiwyg = m.Module.extend({
                         var
                             file_path = files_arr[f],
                             file_name = file_path.substr(file_path.lastIndexOf('/') + 1);
+                            
+                        if (file_path.length > 0 && file_path.substr(0, 4) !== 'http' && file_path.substr(0, 1) == '/') {
+                            file_path = (window.location.protocol  || document.location.protocol) + '//' + window.location.host + file_path;
+                        }
 
-                        if (file_path.length > 0)
-                            context.exec.call(context, 'insertHTML', '<iframe src="/pdfjs/web/viewer.html?file=' + file_path + '" width="100%" height="600px" frameborder="0"></iframe>');
+                        if (file_path.length > 0) {
+                            context.exec.call(context, 'insertHTML', '<iframe src="https://m-framework.com/pdfjs/web/viewer.html?file=' + file_path + '" width="100%" height="600px" frameborder="0"></iframe>');
+                        }
                     }
 
 
@@ -981,41 +1060,58 @@ m.wysiwyg = m.Module.extend({
                 '</form>'
             }
         },
-        google_map: {
-            title: m.i18n('Google map'),
+        leaflet_map: {
+            title: m.i18n('Leaflet map'),
             icon: '<i class="fa fa-map-marker"></i>',
             action: function(e) {
 
                 var
                     a_link = m(e.target),
-                    form = m('.embed_map'),
-                    textareas = form.find('textarea'),
-                    code = textareas.last,
+                    form = m('.wysiwyg_leaflet_map'),
+                    lat = form.find('[name="lat"]'),
+                    lon = form.find('[name="lon"]'),
+                    access_token = form.find('[name="access_token"]'),
+                    z = form.find('[name="z"]'),
+                    height = form.find('[name="height"]'),
                     submit_form = function(e) {
+                    
                         e.preventDefault();
-                        var
-                            code_text = code.value.trim(),
-                            iframe_code;
-
-                        if (code_text.length > 0 && code_text.indexOf('.google.') > -1 && code_text.indexOf('/map') > -1) {
-                            iframe_code = code_text;
+                        
+                        if (lat.val().trim().length == 0 || lon.val().trim().length == 0 || access_token.val().trim().length == 0) {
+                            return false;
                         }
-
-                        if (iframe_code.length > 0) {
-                            this.exec('insertHTML', iframe_code);
-                            textareas.val('');
-                            m.modal(form);
-                        }
+                        
+                        var map_div = '<div id="map_' + (Math.random() * (999 - 100) + 100) + '"' +
+                            'style="background-color: #ddd; height: ' + (height.length > 0 && height.val().trim().length > 0 && parseInt(height.val().trim()) > 0 ? parseInt(height.val().trim()) : 400) + 'px;" ' +
+                            'data-m-action="leaflet_map" ' +
+                            'data-m-lat="' + (lat.length > 0 && lat.val().trim().length > 0 && parseFloat(lat.val().trim()) > 0 ? lat.val().trim() : '') + '" ' + 
+                            'data-m-lon="' + (lon.length > 0 && lon.val().trim().length > 0 && parseFloat(lon.val().trim()) > 0 ? lon.val().trim() : '') + '" ' +
+                            (z.length > 0 && z.val().trim().length > 0 && parseInt(z.val().trim()) > 0 ? 'data-m-z="' + z.val().trim() + '" ' : '') +
+                            'data-m-access_token="' + (access_token.length > 0 && access_token.val().trim().length > 0 ? access_token.val().trim() : '') + '"' +
+                            '>Here will be a Leaflet map</div><p><br></p>';
+                            
+                        this.exec('insertHTML', map_div);
+                            
+                        height.val('');
+                        lat.val('');
+                        lon.val('');
+                        access_token.val('');
+                        m.modal(form);
                     };
 
                 form.on('submit', submit_form.bind(this));
                 m.modal(form);
             },
             tpl: {
-                google_map_form: '<form id="google_map_form" class="to-modal w100 embed_map modal-form">' +
-                '<h2>*Paste an embed Google map code below*:</h2> ' +
-                '<textarea rows="5" placeholder="*Map embed code*"></textarea> ' +
-                '<input class="btn big" type="submit" value="*Save*"></form>'
+                leaflet_map_form: '<form id="leaflet_map_form" class="to-modal w100 wysiwyg_leaflet_map modal-form">' +
+                '<h2>*Fill the form for insert Leaflet map block*</h2> ' +
+                '<p>*Coordinates*:</p>' +
+                '<div class="row"><input type="text" name="lat" placeholder="Latitude" class="w50" required><input type="text" name="lon" placeholder="Longitude" class="w50" required></div>' +
+                '<p>*Options*:</p>' +
+                '<div class="row"><input type="text" name="access_token" placeholder="Access token" class="w50" required><input type="text" name="z" placeholder="Z coordinate" class="w25"><input type="text" name="height" placeholder="Block height" class="w25"></div>' +
+                '<p>*Read here*: <a href="https://leafletjs.com/examples/quick-start/" target="_blank">https://leafletjs.com/examples/quick-start/</a> *for obtain an access token*.</p>' +
+                '<button type="submit"><i class="fa fa-save"></i> *Save*</button>' + 
+                '</form>'
             }
         },
         table: {
@@ -1138,10 +1234,10 @@ m.wysiwyg = m.Module.extend({
 
             wysiwyg_context.html('');
 
-            var td = m(e.target),
-                tr = td.parent(),
-                tbody = tr.parent(),
-                table = tbody.parent(),
+            var td = m(e.target).closest('td', _doc),
+                tr = td.closest('tr', _doc),
+                tbody = tr.closest('tbody', _doc),
+                table = tr.closest('table', _doc),
                 a_cell_properties = m(m.to_element('<a>' + m.i18n('Cell properties') + '</a>')),
                 a_table_properties = m(m.to_element('<a>' + m.i18n('Table properties') + '</a>')),
                 a_add_row_top = m(m.to_element('<a>' + m.i18n('Add row top') + '</a>')),
@@ -1170,11 +1266,33 @@ m.wysiwyg = m.Module.extend({
                 destroy_context();
             });
 
+            a_add_row_bottom.on('click', function(e){
+                e.preventDefault();
+                
+                console.log(td);
+                console.log(tr);
+                
+                var
+                    td_length = tr.find('td').length,
+                    new_tr = document.createElement('tr');
+                
+                console.log(td_length);
+                
+                if (td_length == 0) {
+                    return false;
+                }
+                
+                for(var d = 0; d < td_length; d++) {
+                    new_tr.appendChild(document.createElement('td'));
+                }
+                
+                tr.after(new_tr);
+            });
+
 /*
             wysiwyg_context.append(a_cell_properties.first);
             wysiwyg_context.append(a_table_properties.first);
             wysiwyg_context.append(a_add_row_top.first);
-            wysiwyg_context.append(a_add_row_bottom.first);
             wysiwyg_context.append(a_add_column_left.first);
             wysiwyg_context.append(a_add_column_right.first);
 */
@@ -1184,6 +1302,7 @@ m.wysiwyg = m.Module.extend({
             wysiwyg_context.append(a_delete_column.first);
             */
             wysiwyg_context.append(a_delete_table.first);
+            wysiwyg_context.append(a_add_row_bottom.first);
 
             wysiwyg_context.css({
                 left: e.clientX,
