@@ -11,7 +11,7 @@
  * Date: 2017-10-17T01:09Z
  */
 'use strict';
-(function(w) {
+(function(w, document) {
 
     var
         u = 'undefined',
@@ -247,9 +247,9 @@
          * @param selector
          * @returns instance {m} or n
          */
-        closest: function(selector) {
+        closest: function(selector, context) {
             var
-                matches = document.querySelectorAll(selector),
+                matches = (context || document).querySelectorAll(selector),
                 i, el = this.first;
             do {
                 i = matches.length;
@@ -275,7 +275,7 @@
          */
         next: function(selector) {
 
-            if (this.length == 0 || this.first.parentNode === n)
+            if (this.first === n || this.first.parentNode === n)
                 return false;
 
             if (typeof selector == u || selector === n)
@@ -300,7 +300,7 @@
          */
         prev: function(selector) {
 
-            if (this.length == 0 || this.first.parentNode === n)
+            if (this.first === n || this.first.parentNode === n)
                 return false;
 
             if (typeof selector == u || selector === n)
@@ -480,7 +480,7 @@
          */
         attr: function(name, val) {
 
-            if (typeof this.first == u || this.first === n || typeof this.elements == u || this.elements.length == 0)
+            if (this.first === n || typeof this.elements == u || this.elements.length == 0)
                 return n;
 
             return typeof val == u ? this.first.getAttribute(name) : this.each(function() {
@@ -884,7 +884,7 @@
 
                 if (next !== n)
                     next.parentNode.insertBefore(html, next);
-                else if (!(this.parentNode === n))
+                else if (this.parentNode !== n)
                     this.parentNode.appendChild(html);
             });
         },
@@ -915,7 +915,7 @@
          */
         html: function(html) {
 
-            if(typeof this.first === n)
+            if(this.first === n)
                 return this;
 
             if (typeof html === u)
@@ -926,14 +926,27 @@
             return this;
         },
         /**
-         * Get innerText of first of elements from m instance.
+         * Get/Set innerText of first of elements from m instance.
          * @returns string
          */
-        text: function() {
+        text: function(txt) {
+            
             if (this.first === n)
                 return '';
+            
+            if (typeof txt !== u) {
+                if (typeof this.first.textContent !== u) {
+                    this.first.textContent = txt;
+                }
+                else if (typeof this.first.innerText !== u) {
+                    this.first.innerText = txt;
+                }
+                return this;
+            }
+            
             var tmp = document.createElement('div');
             tmp.innerHTML = this.first.innerHTML;
+            
             return tmp.textContent || tmp.innerText || '';
         },
         /**
@@ -1207,7 +1220,7 @@
          * @returns {boolean}
          */
         is: function(selector) {
-            return this.first.parentElement.querySelector(selector) === this.first;
+            return this.first.parentElement !== null && this.first.parentElement.querySelector(selector) === this.first;
         },
         /**
          * Call methods and modules by `data-m-action` attributes in current m instance.
@@ -1694,4 +1707,4 @@
         m('[data-m-action]').init();
     })();
 
-})(window);
+})(window, document);
