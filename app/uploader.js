@@ -101,7 +101,6 @@ m.fn.uploader = function(context) {
             formData.append('file', file.slice(start, end));
 
         m.ajax({
-            url: '/upload',
             contentType: false,
             data: formData,
             success: function(data) {
@@ -160,7 +159,6 @@ m.fn.uploader = function(context) {
         wrap._data['deleted'] = 1;
 
         return m.ajax({
-            url: '/upload',
             data: {
                 action: '_ajax_delete_file',
                 name: d.name,
@@ -227,7 +225,6 @@ m.fn.uploader = function(context) {
             var wrap = instance.wrapper_init(input);
 
             m.ajax({
-                url: '/upload',
                 data: {
                     action: '_ajax_upload_file',
                     name: _file.name,
