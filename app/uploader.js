@@ -173,7 +173,7 @@ m.fn.uploader = function(context) {
                     return wrap._text = data['error'];
 
                 if (typeof data['result'] !== u && (data['result'] == 'true' || data['result'] == true)) {
-                    wrap.prev('input[type="file"]').show();
+                    //wrap.prev('input[type="file"]').show();
                     wrap.remove();
                 }
 
@@ -281,7 +281,9 @@ m.fn.uploader = function(context) {
         wrap._text.html(typeof data['file_path'] !== u ?
             ('<a href="' + data['file_path'] + '">' + wrap._data.name + '</a>') : wrap._data.name);
 
-        wrap.append('<img src="' + data['file_path'] + '">');
+        if (data['file_path'].indexOf('.jpg') > -1 || data['file_path'].indexOf('.png') > -1 || data['file_path'].indexOf('.svg') > -1) {
+            wrap.append('<img src="' + data['file_path'] + '">');
+        }
 
         this.init(this);
     };
