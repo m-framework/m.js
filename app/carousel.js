@@ -7,8 +7,9 @@ m.fn.carousel = function(context) {
 
     var
         carousel = m(context),
-        nav_left = this.prev('a[href="#left"]') || this.prev('a.left'),
-        nav_right = this.next('a[href="#right"]') || this.next('a.right'),
+        nav_left = this.parent().find('a[href="#left"]') || this.parent().find('a.left'),
+        nav_right = this.parent().find('a[href="#right"]') || this.parent().find('a.right'),
+        nav_dots = this.parent().find('ul.dots'),
         width = carousel.css('width'),
         slide_width = 0,
         slide_proportion = 0,
@@ -19,42 +20,36 @@ m.fn.carousel = function(context) {
             return slides.css('width');
         },
         obj = {},
-        intervals = {leftward: null, rightward: null},
+        nav_dots_li,
         interval_init = function(type){
-
-            if (intervals[type] !== null) {
-                window.clearInterval(intervals[type]);
-                intervals[type] = null;
+        
+            var interval = parseInt(this.attr('data-m-auto'));
+            
+            if (isNaN(interval) || interval == null || interval == 0) {
+                return false;
+            }
+            
+            if (interval <= 10) {
+                interval *= 1000;
             }
 
-            if (intervals[type] == null && this.attr('data-m-auto') !== null) {
-                intervals[type] = window.setInterval(function(){
+            if (typeof carousel.intervals == 'undefined') {
+                carousel.intervals = {leftward: null, rightward: null};
+            }
+            
+            if (typeof carousel.intervals[type] !== 'undefined' && carousel.intervals[type] !== null) {
+                window.clearInterval(carousel.intervals[type]);
+                carousel.intervals[type] = null;
+            }
+
+            if (carousel.intervals[type] == null && this.attr('data-m-auto') !== null) {
+                carousel.intervals[type] = window.setInterval(function(){
+                                
                     if (!carousel.is(':hover'))
                         slide_to(type);
-                }, Math.max(parseInt(this.attr('data-m-auto')), 3000));
+                        
+                }, Math.max(interval, 3000));
             }
-        },
-        clone_init = function(){
-
-            if (carousel.children('.m-carousel-item-clone').length > 0) {
-                carousel.children('.m-carousel-item-clone').remove();
-            }
-
-            slides = carousel.children();
-
-            var clone;
-
-            slides.each(function(i){
-
-                var cloned_item = m(this).clone().class('m-carousel-item-clone', true).first;
-                carousel.append(cloned_item);
-                m(cloned_item).find('[data-m-action]').off('hover click').init();
-                if (m(slides.nth(slides.length - i - 1)).length > 0) {
-                    var cloned_item = m(slides.nth(slides.length - i - 1)).clone().class('m-carousel-item-clone', true).first;
-                    carousel.prepend(cloned_item);
-                    m(cloned_item).find('[data-m-action]').off('hover click').init();
-                }
-            })
         },
         slide_to = function(type) {
 
@@ -65,9 +60,9 @@ m.fn.carousel = function(context) {
 
             slides = carousel.children();
 
-            if (typeof type !== 'undefined' && intervals[type] !== null) {
-                window.clearInterval(intervals[type]);
-                intervals[type] = null;
+            if (typeof type !== 'undefined' && carousel.intervals[type] !== null) {
+                //window.clearInterval(carousel.intervals[type]);
+                carousel.intervals[type] = null;
                 var
                     has_interval = true,
                     nav_elem = type == 'leftward' ? nav_left : nav_right;
@@ -82,13 +77,26 @@ m.fn.carousel = function(context) {
 
                 m(this).class('animated', null).css({cursor: 'grab'});
 
-                if (typeof type !== 'undefined' && typeof has_interval !== 'undefined' && has_interval == true)
-                    interval_init.call(nav_elem, type);
+                //console.log('animated');
+                                
+                if (m(slides.first).class('m-carousel-item-clone')) {
+                    carousel.css('left', (parseInt(carousel.css('left')) + obj['slide_width']) + 'px');
+                    m(slides.first).remove();
+                    slides = carousel.children();
+                }
+                
+                if (typeof nav_dots_li !== 'undefined' && nav_dots_li.length > 0) {
+                    nav_dots_li.class('active', null);
+                    m(nav_dots_li.nth(m(slides.first).attr('data-n'))).class('active', true);
+                }
             });
         },
         responsive_init = function() {
-            if (carousel.class('ready'))
+        
+            if (carousel.class('ready')) {
                 return false;
+            }
+            
             slides.css({width: null});
             carousel.css({width: null});
             width = carousel.parent().css('width');
@@ -96,11 +104,13 @@ m.fn.carousel = function(context) {
             slide_proportion = slide_width / width;
             height = carousel.parent().css('height');
             slides = carousel.children();
+                        
             carousel.css({
                 width: slide_width * (slides.length + (slide_proportion == 1 ? 0 : 1)) + 'px',
-                left: slides.length / -3 * slide_width + 'px',
+                left: '0px',
                 cursor: 'grabbing'
             });
+            
             slides.css({width: slide_width + 'px', height: height + 'px'});
             carousel.class('ready', true);
         },
@@ -116,23 +126,38 @@ m.fn.carousel = function(context) {
             }
 
             var
-                standard_left = slides.length / -3 * obj['slide_width'],
+                clones = carousel.find('.m-carousel-item-clone'),
+                standard_left = 0,
                 left = parseInt(carousel.css('left')),
                 left_move = move_x / obj['slide_width'],
                 n = Math.ceil(Math.abs(left_move)),
                 remainder = Math.abs(move_x % obj['slide_width']),
                 new_left = standard_left;
+                
+            if (clones.length > 0) {
+                left += clones.length * obj['slide_width'];
+                clones.remove();
+            }
 
             /**
              * Drag a slider container to left side
              */
             if (!isNaN(left_move) && left_move < 0) {
+            
+                var cloned_item = m(slides.nth(0)).clone().class('m-carousel-item-clone', true).first;
 
                 for (var i = 0; i < n; i++) {
                     if (m(slides.nth(i)).length > 0) {
                         carousel.append(slides.nth(i)).init();
                     }
                 }
+                
+                carousel.prepend(cloned_item).init();
+                
+                //console.log('move to left', n);
+                
+                standard_left -= obj['slide_width'];
+                new_left = standard_left;
 
                 carousel.css('left', standard_left + obj['slide_width'] - remainder + 'px');
             }
@@ -142,8 +167,9 @@ m.fn.carousel = function(context) {
             else if (!isNaN(left_move) && Math.abs(left_move) > 0) {
 
                 for (var i = slides.length - 1; i > slides.length - 1 - n; --i) {
-                    if (m(slides.nth(i)).length > 0)
+                    if (m(slides.nth(i)).length > 0) {
                         carousel.prepend(slides.nth(i)).init();
+                    }
                 }
 
                 carousel.css('left', standard_left - obj['slide_width'] + remainder + 'px');
@@ -154,16 +180,53 @@ m.fn.carousel = function(context) {
         },
         animate_carousel = function(e){
 
-            if (obj['move_x'] == null)
+            if (obj['move_x'] == null || isNaN(get_coord(e, 'X')) || parseInt(get_coord(e, 'X')) == 0)
                 return false;
 
-            carousel.animate({left: complete_slides(get_coord(e, 'X') - obj['real_start_x']) + 'px'}, 300, function () {
+            carousel.animate({left: complete_slides(parseInt(get_coord(e, 'X')) - obj['real_start_x']) + 'px'}, 300, function () {
                 m(this).class('animated', null).css({cursor: 'grab'});
+                
+                //console.log('animated 2');
+
+                if (m(slides.first).class('m-carousel-item-clone')) {
+                    carousel.css('left', (parseInt(carousel.css('left')) + obj['slide_width']) + 'px');
+                    m(slides.first).remove();
+                    slides = carousel.children();
+                }
+                
+                if (typeof nav_dots_li !== 'undefined' && nav_dots_li.length > 0) {
+                    nav_dots_li.class('active', null);
+                    m(nav_dots_li.nth(m(slides.first).attr('data-n'))).class('active', true);
+                }
             });
 
             obj['move_x'] = null;
         },
         move = function(e) {
+            /**
+             * TODO: calculate minimal and maximal X. Disable an empty space showing.
+             */
+            
+            var 
+                first_slide = m(slides.nth(0)),
+                first_slide_width = parseInt(first_slide.css('width')),
+                cloned_item = m(slides.nth(slides.length - 1)).clone().class('m-carousel-item-clone', true).first;
+            
+            // add clone
+            if (parseInt(get_coord(e, 'X')) > obj['start_x']) {
+                if (first_slide.prev('.m-carousel-item-clone') == false) {
+                    first_slide.before(cloned_item);
+                    obj['carousel_left'] -= first_slide_width;
+                }
+            }
+            //remove clone
+            else {
+                if (first_slide.prev('.m-carousel-item-clone') !== false) {
+                    first_slide.prev('.m-carousel-item-clone').remove();
+                    obj['carousel_left'] += first_slide_width;
+                }
+            }
+            
             obj['move_x'] = get_coord(e, 'X') - obj['start_x'];
             carousel.css('left', obj['carousel_left'] + obj['move_x'] + 'px');
         },
@@ -176,7 +239,7 @@ m.fn.carousel = function(context) {
             if (['A', 'INPUT', 'BUTTON', 'TEXTAREA'].indexOf(e.target.tagName) > -1 || e.target.getAttribute('data-m-action') !== null)
                 return false;
 
-            obj['start_x'] = obj['real_start_x'] = get_coord(e, 'X');
+            obj['start_x'] = obj['real_start_x'] = parseInt(get_coord(e, 'X'));
             obj['move_x'] = null;
 
             obj['carousel_left'] = carousel.css('left');
@@ -205,14 +268,15 @@ m.fn.carousel = function(context) {
 
     m(window).on('load', function(){
 
-        clone_init();
         responsive_init();
 
         slide_width = detect_slide_width();
 
         if (nav_left.length > 0) {
+        
             if (nav_left.attr('data-m-auto') !== null)
                 interval_init.call(nav_left, 'rightward');
+                
             nav_left.on('click', function (e) {
                 e.preventDefault();
                 slide_to('rightward');
@@ -227,6 +291,59 @@ m.fn.carousel = function(context) {
                 e.preventDefault();
                 slide_to('leftward');
             });
+        }
+
+        if (nav_dots.length > 0) {
+        
+            nav_dots.html('');
+            
+            slides.each(function(){
+            
+                var dot_li = '<li></li>';
+
+                if (nav_dots.class('previews')) {
+                    var 
+                        img = this.querySelector('img'),
+                        src = img == null ? null : img.getAttribute('data-src') || img.getAttribute('src'),
+                        alt = img == null ? '' : img.getAttribute('alt');
+                        
+                    if (src !== null) {
+                        dot_li = '<li><img src="' + src + '" alt="' + alt + '"></li>';
+                    }
+                }
+                
+                nav_dots.append(dot_li);
+                
+                m(this).attr('data-n', slides.elements.indexOf(this));
+            });
+            
+            nav_dots_li = nav_dots.find('li');
+            
+            var
+                slide_width = parseInt(m(slides.nth(0)).css('width'));
+            
+            nav_dots_li.on('click', function (e) {
+            
+                var 
+                    act_li = nav_dots_li.elements.indexOf(this),
+                    act_slide = carousel.find('li[data-n="' + act_li + '"]'),
+                    act_slide_index = slides.elements.indexOf(act_slide.first),
+                    data_src = carousel.find('img[data-src]');
+
+                if (data_src.length > 0) {
+                    data_src.each(function(){
+                        this.src = this.getAttribute('data-src');
+                        this.removeAttribute('data-src');
+                    });
+                }
+                
+                carousel.animate({left: complete_slides(-1 * act_slide_index * slide_width) + 'px'}, 300, function(){
+                    nav_dots_li.class('active', null);
+                    m(nav_dots_li.nth(act_li)).class('active', true);
+                });
+            });
+            
+            m(nav_dots_li.first).class('active', true);
         }
 
         m(window).on('resize', function(){

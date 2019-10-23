@@ -13,10 +13,14 @@ m.fn.uploader = function(context) {
         instance = this,
         u = 'undefined',
         multiple = false,
-        input_name;
+        input_name,
+        wrapper = typeof this.data.wrapper !== 'undefined' && m(this.data.wrapper).length > 0 ? m(this.data.wrapper).clone().first : 
+        '<div class="upload-wrapper image-upload-wrap"><div><a ' +
+        'class="upload-text"></a><span class="seconds"></span></div><div class="progress-bar"></div><a class="cancel"></a><input type="hidden" name="" value=""></div>';
 
-    if (typeof window.File == u || typeof window.FileList == u || typeof window.Blob == u)
-        return console.log('Your browser is too old');
+    if (typeof window.File == u || typeof window.FileList == u || typeof window.Blob == u) {
+        return console.log('Your browser is too old and can\'t work with modern uploading');
+    }
 
     /**
      * Initiating an upload process (create file input if it necessary) by `onchange` event
@@ -28,7 +32,7 @@ m.fn.uploader = function(context) {
 
         if (!(input.attr('name') === null))
             input_name = input.attr('name');
-
+/*
         var input_after = m('.upload_input_after');
 
         if (input_after.length > 0 && input_after.prev('input[type="file"][data-m-action][data-m-context]'))
@@ -39,7 +43,7 @@ m.fn.uploader = function(context) {
             '" type="file" data-m-action="upload_photo" data-m-context="this">');
         else
             input.after('<div class="upload_input_after"></div>');
-
+*/
         input.val('');
 
         if (typeof multiple !== 'undefined')
@@ -114,14 +118,26 @@ m.fn.uploader = function(context) {
                 wrap.class('error', null);
 
                 var percentage = Math.round(100 * (num / wrap._data.chunks_count));
-                wrap.progress_bar.css({width: percentage + '%'});
-
-                if (wrap._data.chunks_count == num)
+                
+                if (wrap.find('.progress-bar')) {
+                    wrap.find('.progress-bar').class('success', true);
+                    wrap.find('.progress-bar').css({width: percentage + '%'});
+                    wrap.find('.progress-bar').text(percentage + '%');
+                }
+        
+                if (typeof data['beautiful_date'] !== u && wrap.find('.beautiful-date')) {
+                    wrap.find('.beautiful-date').text(data['beautiful_date']);
+                }
+                
+                if (typeof data['uploaded_size'] !== u && wrap.find('.uploaded-size')) {
+                    wrap.find('.uploaded-size').text(data['uploaded_size']);
+                }
+                
+                if (wrap._data.chunks_count == num) {
                     return instance.success_upload(wrap, data);
+                }
 
-                wrap._text.html(wrap._data.name + ' &nbsp; ' + percentage + '%');
-
-                if (typeof wrap._data.seconds !== u) {
+                if (typeof wrap._data.seconds !== u && wrap.find('.seconds')) {
 
                     var seconds = parseInt(new Date().getTime()) - parseInt(wrap._data.seconds),
                         speed = wrap._data.bytes_per_chunk / seconds,
@@ -131,7 +147,7 @@ m.fn.uploader = function(context) {
                         _seconds = remain_seconds - minutes*60,
                         remain = (minutes > 0 ? minutes + 'min ' : '') + (_seconds > 0 ? _seconds + 'sec' : '');
 
-                    wrap._text.html(wrap._text.html() + ' &nbsp; (' + remain + ')');
+                    wrap.find('.seconds').text('(' + remain + ')');
 
                     wrap._data.seconds = new Date().getTime();
                 }
@@ -186,26 +202,53 @@ m.fn.uploader = function(context) {
      */
     this.wrapper_init = function(input) {
 
-        input.after('<div class="upload-wrapper image-upload-wrap"><div class="progress-bar"></div><div ' +
-        'class="upload-text"></div><a class="cancel"></a><input type="hidden" name="' +
-        input_name + (multiple ? '[]' : '') + '" value=""></div>');
+        if (typeof wrapper == 'undefined') {
+            return false;
+        }
 
-        var wrap = input.next('.upload-wrapper');
+        var 
+            _wrp = m.to_element(wrapper),
+            wrap = m(_wrp).clone(),
+            name_hidden_input = input_name + (multiple ? '[]' : '');
+           
+        if (typeof context !== u && context.first !== instance.first) {
+            
+            if (context.find('div.error')) {
+                context.find('div.error').remove();
+            }
+            
+            if (context.find('div.notice')) {
+                context.find('div.notice').remove();
+            }
+            
+            context.prepend(wrap.first);
+        }
+        else {
+            input.after(wrap.first);
+        }
 
-        wrap['progress_bar'] = wrap.find('.progress-bar');
         wrap['_text'] = wrap.find('.upload-text');
-        console.log(wrap['_text']);
-        wrap['cancel_btn'] = wrap.find('.cancel');
-        wrap['file_id'] = wrap.find('input[name="' + input_name + (multiple ? '[]' : '') + '"]');
+        
+        wrap['file_id'] = wrap.find('input[type="hidden"]');
+        
+        if (wrap['file_id'].length > 0) {
+            wrap['file_id'].attr('name', name_hidden_input);
+        }
 
         input.hide();
 
         wrap['_data'] = {};
 
-        wrap['cancel_btn'].on('click', function(e){
-            e.preventDefault();
-            instance.delete_file(wrap);
-        });
+        wrap['cancel_btn'] = wrap.find('.cancel');
+        
+        if (wrap['cancel_btn'].length > 0) {
+            wrap['cancel_btn'].on('click', function(e){
+                e.preventDefault();
+                instance.delete_file(wrap);
+            });
+        }
+        
+        wrap.class('hidden', null);
 
         return wrap;
     };
@@ -259,6 +302,14 @@ m.fn.uploader = function(context) {
 
                     if (typeof data['id'] !== u && typeof wrap.file_id !== u && typeof data['file_path'] !== u)
                         return instance.success_upload(wrap, data);
+        
+                    if (typeof data['beautiful_date'] !== u && wrap.find('.beautiful-date')) {
+                        wrap.find('.beautiful-date').text(data['beautiful_date']);
+                    }
+                    
+                    if (typeof data['uploaded_size'] !== u && wrap.find('.uploaded-size')) {
+                        wrap.find('.uploaded-size').text(data['uploaded_size']);
+                    }
 
                     instance.upload_chunk(_file, 1, wrap);
                 }
@@ -273,19 +324,48 @@ m.fn.uploader = function(context) {
      * @param data - an object from server with `id` and `file_path` parameters
      */
     this.success_upload = function(wrap, data) {
-        wrap.class('success', true);
+        //wrap.class('success', true);
 
-        if (typeof data['id'] !== u)
-            wrap.file_id.val(data['id']);
-
-        wrap._text.html(typeof data['file_path'] !== u ?
-            ('<a href="' + data['file_path'] + '">' + wrap._data.name + '</a>') : wrap._data.name);
+        if (typeof data['id'] !== u) {
+            
+            if (typeof wrap.file_id !== u) {
+                wrap.file_id.val(data['id']);
+            }
+            
+            wrap.attr('data-id', data['id']);
+            
+            if (wrap.find('.edit-bar')) {
+                wrap.find('.edit-bar').attr('data-m-id', data['id']);
+                wrap.find('.edit-bar').init();
+            }
+        }
+        
+        if (typeof data['file_path'] !== u) {
+            wrap._text.text(wrap._data.name);
+            wrap._text.attr('href', data['file_path']);
+        }
+        
+        if (typeof data['beautiful_date'] !== u && wrap.find('.beautiful-date')) {
+            wrap.find('.beautiful-date').text(data['beautiful_date']);
+        }
+        
+        if (typeof data['uploaded_size'] !== u && wrap.find('.uploaded-size')) {
+            wrap.find('.uploaded-size').text(data['uploaded_size']);
+        }
 
         if (data['file_path'].indexOf('.jpg') > -1 || data['file_path'].indexOf('.png') > -1 || data['file_path'].indexOf('.svg') > -1) {
             wrap.append('<img src="' + data['file_path'] + '">');
         }
+        
+        if (wrap.find('.progress-bar')) {
+            wrap.find('.progress-bar').hide();
+        }
 
-        this.init(this);
+        if (typeof context !== u && context.first !== instance.first) {
+            context.init();
+        }
+
+        //this.init(this);
     };
 
     if (typeof this !== u && this instanceof m)
