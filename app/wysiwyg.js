@@ -838,7 +838,7 @@ m.wysiwyg = m.Module.extend({
                             file_path = files_arr[f],
                             file_name = file_path.substr(file_path.lastIndexOf('/') + 1);
 
-                        context.exec.call(context, 'insertHTML', '<img src="' + file_path + '" width="48%" align="left">');
+                        context.exec.call(context, 'insertHTML', '<img src="' + file_path + '">');
                     }
 
                     selected_files.val('');
