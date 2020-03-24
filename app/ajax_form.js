@@ -10,10 +10,12 @@ m.fn.ajax_form = function(form) {
         form.class({loading: true});
 
         e.preventDefault();
+        
+        var data = form.form_collect();
 
         m.ajax({
             url: form.attr('action'),
-            data: form.form_collect(),
+            data: data,
             success: function (response) {
 
                 form.class({loading: null});

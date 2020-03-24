@@ -19,6 +19,7 @@ m.fn.ajax_suggestions = function(context) {
         model = input.attr('data-m-model'),
         fields = input.attr('data-m-fields'),
         parameter = input.attr('data-m-parameter'),
+        additional_event = input.attr('data-m-event'),
         parameter_value = input.attr('data-m-parameter_value'),
         helper = input.prev('input.input-helper'),
         suggestions = input.next('div.suggestions'),
@@ -32,7 +33,7 @@ m.fn.ajax_suggestions = function(context) {
         helper.attr('placeholder', input.attr('placeholder'));
     }
 
-    helper.on('keydown keyup', function(e){
+    helper.on('keyup', function(e){ // keydown
 
         suggestions.html('');
 
@@ -79,6 +80,9 @@ m.fn.ajax_suggestions = function(context) {
                         e.preventDefault();
                         input.val(this.getAttribute('data-id')).event_fire('change');
                         helper.val(m(this).text()).event_fire('change');
+                        if (additional_event !== null) {
+                            helper.event_fire(additional_event);
+                        }
                         suggestions.html('');
                     });
                 }

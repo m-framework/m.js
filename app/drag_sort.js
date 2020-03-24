@@ -167,12 +167,14 @@ m.fn.drag_sort = function() {
 
         el.attr('data-sequence', i);
 
-        el.on('dragstart', start);
-        el.on('dragenter', enter);
-        el.on('dragover', over);
-        el.on('dragleave', leave);
-        el.on('drop', drop);
-        el.on('dragend', end);
+        el
+            .off('dragstart dragenter dragover dragleave drop dragend')
+            .on('dragstart', start)
+            .on('dragenter', enter)
+            .on('dragover', over)
+            .on('dragleave', leave)
+            .on('drop', drop)
+            .on('dragend', end);
 
         if (el.find('i.move').length > 0) {
             el.find('i.move').on('mousedown', function () {
