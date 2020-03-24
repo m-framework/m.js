@@ -16,7 +16,11 @@ m.fn.carousel = function(context) {
         height = carousel.css('height'),
         slides = carousel.children(),
         options = typeof this.data.options === 'undefined' ? {} : this.data.options,
+
         detect_slide_width = function(){
+
+            //console.log(slides.css('width'), slides.first.clientWidth, slides.first.offsetWidth);
+
             return slides.css('width');
         },
         obj = {},
@@ -45,7 +49,7 @@ m.fn.carousel = function(context) {
             if (carousel.intervals[type] == null && this.attr('data-m-auto') !== null) {
                 carousel.intervals[type] = window.setInterval(function(){
                                 
-                    if (!carousel.is(':hover'))
+                    if (!carousel.is(':hover') && carousel.visible())
                         slide_to(type);
                         
                 }, Math.max(interval, 3000));
@@ -100,18 +104,26 @@ m.fn.carousel = function(context) {
             slides.css({width: null});
             carousel.css({width: null});
             width = carousel.parent().css('width');
-            slide_width = Math.min(detect_slide_width(), width);
-            slide_proportion = slide_width / width;
-            height = carousel.parent().css('height');
-            slides = carousel.children();
-                        
-            carousel.css({
-                width: slide_width * (slides.length + (slide_proportion == 1 ? 0 : 1)) + 'px',
-                left: '0px',
-                cursor: 'grabbing'
-            });
-            
-            slides.css({width: slide_width + 'px', height: height + 'px'});
+
+            var slide_width = detect_slide_width();
+
+            if (!isNaN(parseInt(slide_width)) && parseInt(slide_width) > 0) {
+
+                slide_width = Math.min(slide_width, width);
+                slide_proportion = slide_width / width;
+                height = carousel.parent().css('height');
+                slides = carousel.children();
+
+                carousel.css({
+                    // width: slide_width * (slides.length + (slide_proportion == 1 ? 0 : 1)) + 'px',
+                    left: '0px',
+                    cursor: 'grabbing'
+                });
+
+                // slides.css({width: slide_width + 'px', height: height + 'px'});
+
+            }
+
             carousel.class('ready', true);
         },
         get_coord = function (e, c) {
@@ -270,7 +282,7 @@ m.fn.carousel = function(context) {
 
         responsive_init();
 
-        slide_width = detect_slide_width();
+        //slide_width = detect_slide_width();
 
         if (nav_left.length > 0) {
         
