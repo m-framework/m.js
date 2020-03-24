@@ -732,11 +732,53 @@
                 return this;
             }
 
-            var css;
+            var
+                closest_prop = function(elem, prop){
+                    var prop_val = getComputedStyle(elem, null).getPropertyValue(prop);
+                    if (isNaN(parseInt(prop_val)) || prop_val.substr(-1) == '%') {
+                        prop_val = closest_prop(elem.parentNode, prop);
+                    }
+                    return parseInt(prop_val);
+                },
+                css;
 
             if (this.visible() || prop == 'display') {
 
-                css = parseInt(getComputedStyle(this.first).getPropertyValue(prop).toString().replace('px', '').trim());
+                css = getComputedStyle(this.first, null).getPropertyValue(prop).toString().trim();
+
+                if (css.substr(-2) == 'px') {
+                    css = css.substr(0, css.length-2);
+                }
+
+                if (/^calc\([\-]{0,}[0-9]+px[\s]+\+[\s]+[0-9]+\%\)/.test(css) && ['width','height'].indexOf(prop) > -1) {
+                    var
+                        css_matches = css.match(/^calc\(([\-]{0,}[0-9]+)px[\s]+\+[\s]+([0-9]+)\%\)/),
+                        parent_prop = closest_prop(this.first.parentNode, prop);
+
+                    if (!isNaN(parseInt(parent_prop)) && !isNaN(parseInt(css_matches['1'])) && !isNaN(parseInt(css_matches['2']))) {
+                        console.log(parent_prop, parseInt(css_matches['2']) / 100, parseInt(css_matches['1']));
+                        css = parent_prop * (parseInt(css_matches['2']) / 100) + parseInt(css_matches['1']);
+                    }
+                }
+                else if (/^calc\([0-9]+\%[\s]+\+[\s]+[\-]{0,}[0-9]+\px\)/.test(css) && ['width','height'].indexOf(prop) > -1) {
+                    var
+                        css_matches = css.match(/^calc\(([0-9]+)\%[\s]+\+[\s]+([\-]{0,}[0-9]+)px\)/),
+                        parent_prop = closest_prop(this.first.parentNode, prop);
+
+                    if (!isNaN(parseInt(parent_prop)) && !isNaN(parseInt(css_matches['1'])) && !isNaN(parseInt(css_matches['2']))) {
+                        console.log(parent_prop, parseInt(css_matches['1']) / 100, parseInt(css_matches['2']));
+                        css = parent_prop * (parseInt(css_matches['1']) / 100) + parseInt(css_matches['2']);
+                    }
+                }
+
+                if (css == 'auto' && prop == 'width') {
+                    console.log(this.first.clientWidth);
+                }
+                else if (css == 'auto' && prop == 'height') {
+                    console.log(this.first.clientHeight);
+                }
+
+                css = parseInt(css);
 
                 if (isNaN(css) && !isNaN(this.first.style[prop]) && parseInt(this.first.style[prop]) > 0)
                     css = this.first.style[prop];
@@ -744,13 +786,13 @@
             else if (prop !== 'display' && typeof this.first.getAttribute == 'function') {
                 var old_style = this.first.getAttribute('style');
                 this.first.setAttribute('style', "display: block;");
-                css = parseInt(getComputedStyle(this.first).getPropertyValue(prop).toString().replace('px', '').trim());
+                css = parseInt(getComputedStyle(this.first, null).getPropertyValue(prop).toString().replace('px', '').trim());
                 if (isNaN(css) && !isNaN(this.first.style[prop]) && parseInt(this.first.style[prop]) > 0)
                     css = this.first.style[prop];
                 this.first.setAttribute('style', old_style);
             }
-
-            return typeof css !== u && css !== n && isNaN(css) ? 0 : css;
+// console.log(prop, css);
+            return typeof css !== u && css !== n && isNaN(css) ? -0 : css;
         },
         /**
          * Get an actual offset data of first element from current m instance.
@@ -976,7 +1018,7 @@
                         path = code.attr('href').substr(0, code_index_of);
                     }
                     else {
-                        path = 'https://cdn.m-framework.com/css/1.1.min/';
+                        path = 'https://cdn.m-framework.com/css/1.2.min/';
                     }
 
                     if (action.indexOf('.min.css') == -1) {
@@ -1257,8 +1299,7 @@
                         context = (typeof _data == u || typeof _data.context == u || _data.context == n
                         || _data.context == 'this') ? elem : m(_data.context);
 
-
-                    if (elem.length == 0 || context.length == 0 || (!(typeof elem.first.initiated === 'undefined') && elem.first.initiated.indexOf(action) > -1)) {
+                    if (elem.length == 0 || context.length == 0 || (typeof elem.first.initiated !== 'undefined' && elem.first.initiated.indexOf(action) > -1)) {
                         return false;
                     }
 
@@ -1594,6 +1635,13 @@
                 .class({'with-modal': true})
                 .css({'padding-right': scrollbar_width + 'px'});
         }
+
+        modal.off('click').on('click', function(e){
+            if (e.target === modal.first) {
+                e.preventDefault();
+                m.modal(context);
+            }
+        });
 
         return true;
     };
