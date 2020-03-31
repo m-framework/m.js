@@ -248,13 +248,30 @@
          * @returns instance {m} or n
          */
         closest: function(selector, context) {
-            var
-                matches = (context || document).querySelectorAll(selector),
-                i, el = this.first;
-            do {
-                i = matches.length;
-                while (--i >= 0 && matches.item(i) !== el) {}
-            } while ((i < 0) && (el = el.parentElement));
+            if (selector === ':visible') {
+                function closest_visible(node){
+                    while (node) {
+                        if (m(node).visible() && parseInt(node.offsetWidth) > 0) {
+                            console.log(node);
+                            return node;
+                        }
+                        else node = node.parentElement;
+                    }
+                    return null;
+                }
+                el = closest_visible(this.first);
+            }
+            else {
+                var
+                    matches = (context || document).querySelectorAll(selector),
+                    i,
+                    el = this.first;
+                do {
+                    i = matches.length;
+                    while (--i >= 0 && matches.item(i) !== el) {}
+                } while ((i < 0) && (el = el.parentElement));
+            }
+
             return el !== n ? m(el) : false;
         },
         /**
@@ -756,7 +773,6 @@
                         parent_prop = closest_prop(this.first.parentNode, prop);
 
                     if (!isNaN(parseInt(parent_prop)) && !isNaN(parseInt(css_matches['1'])) && !isNaN(parseInt(css_matches['2']))) {
-                        console.log(parent_prop, parseInt(css_matches['2']) / 100, parseInt(css_matches['1']));
                         css = parent_prop * (parseInt(css_matches['2']) / 100) + parseInt(css_matches['1']);
                     }
                 }
@@ -766,17 +782,16 @@
                         parent_prop = closest_prop(this.first.parentNode, prop);
 
                     if (!isNaN(parseInt(parent_prop)) && !isNaN(parseInt(css_matches['1'])) && !isNaN(parseInt(css_matches['2']))) {
-                        console.log(parent_prop, parseInt(css_matches['1']) / 100, parseInt(css_matches['2']));
                         css = parent_prop * (parseInt(css_matches['1']) / 100) + parseInt(css_matches['2']);
                     }
                 }
 
-                if (css == 'auto' && prop == 'width') {
-                    console.log(this.first.clientWidth);
-                }
-                else if (css == 'auto' && prop == 'height') {
-                    console.log(this.first.clientHeight);
-                }
+                // if (css == 'auto' && prop == 'width') {
+                //     console.log(this.first.clientWidth);
+                // }
+                // else if (css == 'auto' && prop == 'height') {
+                //     console.log(this.first.clientHeight);
+                // }
 
                 css = parseInt(css);
 
@@ -792,7 +807,7 @@
                 this.first.setAttribute('style', old_style);
             }
 // console.log(prop, css);
-            return typeof css !== u && css !== n && isNaN(css) ? -0 : css;
+            return typeof css !== u && css !== n && isNaN(css) ? 0 : css;
         },
         /**
          * Get an actual offset data of first element from current m instance.

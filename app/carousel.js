@@ -10,18 +10,97 @@ m.fn.carousel = function(context) {
         nav_left = this.parent().find('a[href="#left"]') || this.parent().find('a.left'),
         nav_right = this.parent().find('a[href="#right"]') || this.parent().find('a.right'),
         nav_dots = this.parent().find('ul.dots'),
-        width = carousel.css('width'),
-        slide_width = 0,
+        width = carousel.parent().css('width'),
         slide_proportion = 0,
         height = carousel.css('height'),
         slides = carousel.children(),
-        options = typeof this.data.options === 'undefined' ? {} : this.data.options,
-
+        columns = {lg: 1, md: 1, sm: 1, xs: 1},
+        slide_width,
         detect_slide_width = function(){
+            var
+                ww = window.innerWidth || document.documentElement.clientWidth ||
+                    document.getElementsByTagName('body')[0].clientWidth,
+                width = carousel.parent().css('width') === 0 ? carousel.closest(':visible').first.offsetWidth :
+                    carousel.parent().css('width'),
+                _class = carousel.attr('class');
 
-            //console.log(slides.css('width'), slides.first.clientWidth, slides.first.offsetWidth);
+            if (width === 0 && carousel.closest('.container').length > 0) {
+                width = carousel.closest('.container').css('width');
+            }
 
-            return slides.css('width');
+            if (width === 0) {
+                width = ww;
+            }
+
+            if (_class.indexOf(' columns-') > -1) {
+                carousel.data.columns = parseInt(_class.match(/ columns\-([0-9])/g)['0']);
+            }
+            else if (_class.indexOf(' md-columns-') > -1) {
+                carousel.data.md_columns = parseInt(_class.match(/ md\-columns\-([0-9])/g)['0']);
+            }
+            else if (_class.indexOf(' sm-columns-') > -1) {
+                carousel.data.sm_columns = parseInt(_class.match(/ sm\-columns\-([0-9])/g)['0']);
+            }
+            else if (_class.indexOf(' xs-columns-') > -1) {
+                carousel.data.xs_columns = parseInt(_class.match(/ xs\-columns\-([0-9])/g)['0']);
+            }
+
+            if (typeof carousel.data.columns !== 'undefined' && [1,2,3,4,5,6].indexOf(parseInt(carousel.data.columns)) > -1) {
+                columns.lg = parseInt(carousel.data.columns);
+            }
+            if (typeof carousel.data.md_columns !== 'undefined' && [1,2,3,4].indexOf(parseInt(carousel.data.md_columns)) > -1) {
+                columns.md = parseInt(carousel.data.md_columns);
+            }
+            if (typeof carousel.data.sm_columns !== 'undefined' && [1,2,3].indexOf(parseInt(carousel.data.sm_columns)) > -1) {
+                columns.sm = parseInt(carousel.data.sm_columns);
+            }
+            if (typeof carousel.data.xs_columns !== 'undefined' && [1,2,3].indexOf(parseInt(carousel.data.xs_columns)) > -1) {
+                columns.xs = parseInt(carousel.data.xs_columns);
+            }
+
+            if (columns.lg > 1 && columns.md === 1) {
+                switch (columns.lg) {
+                    case 6:
+                        columns.md = 4;
+                        break;
+                    case 5:
+                    case 4:
+                        columns.md = 3;
+                        break;
+                    case 3:
+                        columns.md = 2;
+                        break;
+                }
+            }
+            if (columns.lg > 1 && columns.sm === 1) {
+                switch (columns.lg) {
+                    case 6:
+                        columns.sm = 3;
+                        break;
+                    case 5:
+                    case 4:
+                        columns.sm = 2;
+                        break;
+                    case 3:
+                        columns.sm = 1;
+                        break;
+                }
+            }
+
+            if (ww > 920) {
+                slide_width = width / columns.lg;
+            }
+            else if (ww <= 920 && ww > 768) {
+                slide_width = width / columns.md;
+            }
+            else if (ww <= 768 && ww > 480) {
+                slide_width = width / columns.sm;
+            }
+            else if (ww <= 480) {
+                slide_width = width / columns.xs;
+            }
+
+            return slide_width;
         },
         obj = {},
         nav_dots_li,
@@ -103,11 +182,10 @@ m.fn.carousel = function(context) {
             
             slides.css({width: null});
             carousel.css({width: null});
-            width = carousel.parent().css('width');
 
-            var slide_width = detect_slide_width();
+            detect_slide_width();
 
-            if (!isNaN(parseInt(slide_width)) && parseInt(slide_width) > 0) {
+            if (!isNaN(parseInt(slide_width)) && !isNaN(parseInt(width)) && parseInt(slide_width) > 0 && parseInt(width) > 0) {
 
                 slide_width = Math.min(slide_width, width);
                 slide_proportion = slide_width / width;
@@ -115,13 +193,12 @@ m.fn.carousel = function(context) {
                 slides = carousel.children();
 
                 carousel.css({
-                    // width: slide_width * (slides.length + (slide_proportion == 1 ? 0 : 1)) + 'px',
+                    width: slide_width * (slides.length + (slide_proportion == 1 ? 0 : 1)) + 'px',
                     left: '0px',
                     cursor: 'grabbing'
                 });
 
-                // slides.css({width: slide_width + 'px', height: height + 'px'});
-
+                slides.css({width: slide_width + 'px'});
             }
 
             carousel.class('ready', true);
@@ -135,6 +212,10 @@ m.fn.carousel = function(context) {
 
             if (isNaN(obj['slide_width'])) {
                 obj['slide_width'] = parseInt(m(slides.nth(0)).css('width'));
+            }
+
+            if (isNaN(obj['slide_width'])) {
+                return false;
             }
 
             var
@@ -197,8 +278,6 @@ m.fn.carousel = function(context) {
 
             carousel.animate({left: complete_slides(parseInt(get_coord(e, 'X')) - obj['real_start_x']) + 'px'}, 300, function () {
                 m(this).class('animated', null).css({cursor: 'grab'});
-                
-                //console.log('animated 2');
 
                 if (m(slides.first).class('m-carousel-item-clone')) {
                     carousel.css('left', (parseInt(carousel.css('left')) + obj['slide_width']) + 'px');
@@ -282,8 +361,6 @@ m.fn.carousel = function(context) {
 
         responsive_init();
 
-        //slide_width = detect_slide_width();
-
         if (nav_left.length > 0) {
         
             if (nav_left.attr('data-m-auto') !== null)
@@ -330,9 +407,6 @@ m.fn.carousel = function(context) {
             });
             
             nav_dots_li = nav_dots.find('li');
-            
-            var
-                slide_width = parseInt(m(slides.nth(0)).css('width'));
             
             nav_dots_li.on('click', function (e) {
             
