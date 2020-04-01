@@ -1767,6 +1767,12 @@
 
         m.i18n_init();
 
+        if (m('pre').length > 0) {
+            m('pre').each(function(){
+                this.setAttribute('data-m-action', 'code');
+            });
+        }
+
         m('[data-m-action]').init();
     })();
 
