@@ -1048,7 +1048,7 @@
                         src += '?upd=' + upd;
                 }
 
-                _c = m.to_element('<link rel="stylesheet" type="text/css" href="' + src + '">');
+                _c = m.to_element('<link href="' + src + '" rel="stylesheet" type="text/css" media="all">');
             }
             else if (action.indexOf('.js') > 0) {
 
