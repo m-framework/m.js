@@ -11,6 +11,7 @@ m.fn.dependent_select = function(context) {
         field = this,
         name = this.attr('name') || this.data.name,
         dependent_name = this.data.dependent,
+        method = this.data.method || 'GET',
         parent = typeof this.data.parent == 'undefined' ? this.closest('form') : this.closest(this.data.parent),
         default_value = typeof this.data.value == 'undefined' ? null : this.data.value,
         dependent_field = parent.find('select[name="' + dependent_name + '"]'),
@@ -21,6 +22,7 @@ m.fn.dependent_select = function(context) {
 
             m.ajax({
                 url: json_path.replace('{dependent_value}', this.value),
+                type: method,
                 success: function(data) {
 
                     field.html(default_options);

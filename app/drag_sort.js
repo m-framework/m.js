@@ -18,6 +18,7 @@ m.fn.drag_sort = function() {
         has_move_element = false,
         isHandle = false,
         group_id = container.attr('data-m-group'),
+        module_action = this.data.module_action || '_update_sequence',
         init_elements = function(){
             elements = container.find('[data-id]');
 
@@ -149,9 +150,8 @@ m.fn.drag_sort = function() {
         save_sequence = function() {
 
             m.ajax({
-                url: '/ajax',
                 data: {
-                    action: '_update_sequence',
+                    action: module_action,
                     model: container.data.model,
                     sequence: sequence,
                     group: group_id

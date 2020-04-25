@@ -34,7 +34,8 @@ m.fn.tooltip = function(context) {
             });
         }
         else if (event == 'mouseover') {
-            elem.on('mouseout', function(e){
+            elem.off('mouseout')
+                .on('mouseout', function(e){
                 ttlp.class({active: null});
             });
         }

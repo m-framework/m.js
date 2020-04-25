@@ -5,6 +5,10 @@ if (typeof m == 'undefined') {
 
 m.fn.code = function(context) {
 
+    if (typeof this.data.highlight !== 'undefined' && this.data.highlight === 'false') {
+        return true;
+    }
+
     var
         // strReg1 = /"([a-zA-Z0-9\-\_]+)"/g,
         strReg2 = /'([a-zA-Z0-9\-\_\[\]\#\. ]+)'/g,

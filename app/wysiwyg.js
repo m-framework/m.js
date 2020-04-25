@@ -29,7 +29,6 @@ m.wysiwyg = m.Module.extend({
         this.frame_init();
         this.area_init();
         this.panel_init();
-        this.panel_fixed_init();
 
         this.table_context_init();
 
@@ -40,9 +39,6 @@ m.wysiwyg = m.Module.extend({
             .css({'border-radius': 0, border: 'none 0', height: '300px'}).class('code', true);
         this.area.start_text = this.area.text();
         this.area
-            .on('scroll', function(e){
-                m(this).css({'background-position': '0 -' + this.scrollTop + 'px'});
-            })
             .on('keydown', function(e){
                        
                 if(e.keyCode == 9) {
@@ -78,7 +74,7 @@ m.wysiwyg = m.Module.extend({
                     this.selectionEnd = selection_end;
                 }
                 
-                if(e.keyCode == 68 && e.ctrlKey) {
+                if(typeof e.keyCode !== 'undefined' && e.keyCode == 68 && e.ctrlKey) {
                     e.preventDefault();
                 
                     if (typeof this.selectionStart == 'undefined' || typeof this.selectionEnd == 'undefined') {
@@ -175,80 +171,9 @@ m.wysiwyg = m.Module.extend({
     },
     panel_top: 0,
     panel_bottom: 0,
-    window_scroll: function(_panel, _panel_top, _panel_bottom, y){
-
-        if (y < _panel_top) {
-            _panel.css({top: _panel_top - y + 'px'});
-        } else if (y <= _panel_bottom) {
-            _panel.css({top: '0px'});
-        } else if (y > _panel_bottom) {
-            _panel.css({top: _panel_bottom - y + 'px'});
-        }
-    },
-    panel_fixed_init: function(){
-        var
-            panel = this.panel,
-            panel_width,
-            panel_margin_top = parseInt(panel.css('margin-top')),
-            panel_top,
-            panel_bottom,
-            pseudo_panel_height,
-            scroll_func = this.window_scroll;
-
-        this.doc.window_scroll = this.window_scroll;
-
-        m(this.doc).on('focus', function(){
-
-            panel_width = parseInt(panel.css('width'));
-            pseudo_panel_height = parseInt(panel.css('height')) + panel_margin_top;
-            panel_top = this.frame.offset().top - parseInt(panel.css('height'));
-            panel_bottom = panel_top + this.frame.css('height');
-
-            if (panel.next('.pseudo-panel') === false) {
-                panel.after('<div class="pseudo-panel" style="height:' + pseudo_panel_height + 'px;"></div>');
-            }
-
-            panel.class({fixed: true});
-            panel.css({width: panel_width + 'px'});
-
-            scroll_func(panel, panel_top, panel_bottom, window.scrollY);
-
-            (function(){
-                m(window).on('scroll', function(e){
-                    scroll_func.apply(window, [panel, panel_top, panel_bottom, e.pageY]);
-                });
-            })();
-
-            panel.attr('data-focus', 'true');
-
-        }).on('blur', function(e){
-
-            panel.attr('data-focus', null);
-
-            window.setTimeout(function(){
-
-                if (panel.attr('data-focus') == 'true') {
-                    return false;
-                }
-
-                if (!(panel.next('.pseudo-panel') === false)) {
-                    panel.next('.pseudo-panel').remove();
-                }
-
-                panel.class({fixed: null});
-                panel.css({width: 'auto'});
-
-                (function(){
-                    m(window).off('scroll', function(e){
-                        scroll_func.apply(window, [panel, panel_top, panel_bottom, e.pageY]);
-                    });
-                })();
-            }, 200);
-        });
-    },
     panel_init: function() {
 
-        this.area.parent().after('<div class="wysiwyg-panel"></div>');
+        this.area.parent().after('<div class="wysiwyg-panel sticky"></div>');
         this.panel = this.area.parent().next('.wysiwyg-panel');
 
         if (typeof this.action.data !== 'undefined' && typeof this.action.data.wysiwyg_type !== 'undefined'
